@@ -2,7 +2,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from django.core.exceptions import ImproperlyConfigured
 
-from travel_recommender.utils import get_env_or_raise, str_to_bool
+from travel_recommender.utils import get_env_or_raise, str_to_bool, get_env_as_list
 
 # ---------------------------------------------------------------------
 # Paths & Environment
@@ -178,5 +178,9 @@ REQUEST_TIMEOUT = int(get_env_or_raise('REQUEST_TIMEOUT_IN_SECONDS'))
 # Logging
 # ---------------------------------------------------------------------
 
-from travel_recommender.structlog_config import configure_structlog
-configure_structlog()
+DISABLED_FIELDS_TO_LOG = get_env_as_list("DISABLED_FIELDS_TO_LOG")
+SENSITIVE_KEYS = get_env_as_list("SENSITIVE_KEYS")
+SENSITIVE_HEADERS = get_env_as_list("SENSITIVE_HEADERS")
+
+from travel_recommender.structlog_config import configure_logging
+configure_logging()

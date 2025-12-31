@@ -1,6 +1,8 @@
 import json
 import os
+from typing import List
 from django.core.exceptions import ImproperlyConfigured
+from urllib.parse import urljoin, quote_plus
 
 
 def get_env_or_raise(key: str) -> str:
@@ -10,6 +12,16 @@ def get_env_or_raise(key: str) -> str:
             f"Environment variable '{key}' is required but not set."
         )
     return value.strip()
+
+def get_env_as_list(key: str, *, lower: bool = True) -> List[str]:
+    value = get_env_or_raise(key)
+    items = [v.strip() for v in value.split(",") if v.strip()]
+
+    if lower:
+        items = [v.lower() for v in items]
+
+    return items
+
 
 def str_to_bool(value: str) -> bool:
     normalized = value.strip().lower()
@@ -32,3 +44,10 @@ def parse_json_or_string(input_data):
         data = input_data
 
     return data
+
+def multi_urljoin(*parts) -> str:
+    url = urljoin(
+        parts[0].strip("/") + "/",
+        "/".join(quote_plus(part.strip("/"), safe="/") for part in parts[1:])
+    )
+    return url
