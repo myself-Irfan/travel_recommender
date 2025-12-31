@@ -57,6 +57,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "travel_recommender.middleware.request_response_logger.RequestResponseLoggerMiddleware",
 ]
 
 ROOT_URLCONF = 'travel_recommender.urls'
@@ -172,3 +173,10 @@ WEATHER_CACHE_TTL=int(get_env_or_raise('WEATHER_CACHE_TTL_IN_SECONDS'))
 OPEN_METEO_BASE_URL = get_env_or_raise('OPEN_METEO_BASE_URL')
 DISTRICTS_JSON_URL = get_env_or_raise('DISTRICTS_JSON_URL')
 REQUEST_TIMEOUT = int(get_env_or_raise('REQUEST_TIMEOUT_IN_SECONDS'))
+
+# ---------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------
+
+from travel_recommender.structlog_config import configure_structlog
+configure_structlog()
