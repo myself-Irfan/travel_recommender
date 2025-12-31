@@ -1,10 +1,10 @@
 from django.urls import path
 
-from travel.views.district_list_view import DistrictListView
-from travel.views.district_detail_view import DistrictDetailView
+from travel.views.best_district_view import BestDistrictsAPIView
+from travel.views.recommend import TravelRecommendationAPIView
 
 
 urlpatterns = [
-    path("districts/", DistrictListView.as_view(), name=DistrictListView.api_name),
-    path("districts/<str:name>/", DistrictDetailView.as_view(), name=DistrictDetailView.api_name),
+    path("best-districts/", BestDistrictsAPIView.as_view(), name=BestDistrictsAPIView.api_name),
+    path("recommend/", TravelRecommendationAPIView.as_view(), name=TravelRecommendationAPIView.api_name),
 ]
