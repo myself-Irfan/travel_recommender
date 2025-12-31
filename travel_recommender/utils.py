@@ -1,3 +1,4 @@
+import json
 import os
 from django.core.exceptions import ImproperlyConfigured
 
@@ -20,3 +21,14 @@ def str_to_bool(value: str) -> bool:
     raise ImproperlyConfigured(
         f"Invalid boolean value '{value}'. Expected one of: true, false, 1, 0, yes, no."
     )
+
+def parse_json_or_string(input_data):
+    if isinstance(input_data, str):
+        try:
+            data = json.loads(input_data)
+        except ValueError as e:
+            data = input_data
+    else:
+        data = input_data
+
+    return data
