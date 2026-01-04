@@ -1,6 +1,7 @@
 from pathlib import Path
 from dotenv import load_dotenv
 from django.core.exceptions import ImproperlyConfigured
+from celery.schedules import crontab
 
 from travel_recommender.utils import get_env_or_raise, str_to_bool, get_env_as_list
 
@@ -171,6 +172,7 @@ WEATHER_CACHE_TTL=int(get_env_or_raise('WEATHER_CACHE_TTL_IN_SECONDS'))
 # ---------------------------------------------------------------------
 
 OPEN_METEO_BASE_URL = get_env_or_raise('OPEN_METEO_BASE_URL')
+OPEN_METEO_AIR_QUALITY_BASE_URL=get_env_or_raise('OPEN_METEO_AIR_QUALITY_BASE_URL')
 DISTRICTS_JSON_URL = get_env_or_raise('DISTRICTS_JSON_URL')
 REQUEST_TIMEOUT = int(get_env_or_raise('REQUEST_TIMEOUT_IN_SECONDS'))
 
@@ -184,3 +186,26 @@ SENSITIVE_HEADERS = get_env_as_list("SENSITIVE_HEADERS")
 
 from travel_recommender.structlog_config import configure_logging
 configure_logging()
+
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "redis://localhost:6379/1"
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Dhaka'
+CELERY_ENABLE_UTC = True
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+
+CELERY_BEAT_SCHEDULE = {
+    "update_districts_every_24h": {
+        "task": "travel.tasks.update_districts_task",
+        "schedule": crontab(hour=0, minute=0),  # daily at midnight
+    },
+    "update_weather_every_hour": {
+        "task": "travel.tasks.update_weather_task",
+        "schedule": crontab(minute=0, hour="*"),  # every hour
+    },
+}
+

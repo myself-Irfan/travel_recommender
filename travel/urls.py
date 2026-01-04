@@ -1,7 +1,7 @@
 from django.urls import path
 
-from travel.views.best_district_view import BestDistrictsAPIView
-from travel.views.recommend import TravelRecommendationAPIView
+from travel.views.best_districts_view import BestDistrictsAPIView
+from travel.views.recommend_view import TravelRecommendationAPIView
 
 
 urlpatterns = [
