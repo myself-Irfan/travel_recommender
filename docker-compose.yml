@@ -1,0 +1,88 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: travel_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - travel_network
+
+  web:
+    build: .
+    container_name: travel_web
+    command: >
+      sh -c "python manage.py collectstatic --noinput &&
+             python manage.py migrate &&
+             gunicorn --bind 0.0.0.0:8000 --workers 4 --timeout 120 travel_recommender.wsgi:application"
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - travel_network
+
+  celery_worker:
+    build: .
+    container_name: travel_celery_worker
+    command: celery -A travel_recommender worker --loglevel=info --concurrency=4
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - travel_network
+
+  celery_beat:
+    build: .
+    container_name: travel_celery_beat
+    command: celery -A travel_recommender beat --loglevel=info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - travel_network
+
+networks:
+  travel_network:
+    driver: bridge
+
+volumes:
+  redis_data:
+  static_volume:

@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from dotenv import load_dotenv
 from django.core.exceptions import ImproperlyConfigured
@@ -125,6 +126,7 @@ USE_TZ = True
 # ---------------------------------------------------------------------
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # ---------------------------------------------------------------------
 # REST Framework Config
@@ -187,8 +189,15 @@ SENSITIVE_HEADERS = get_env_as_list("SENSITIVE_HEADERS")
 from travel_recommender.structlog_config import configure_logging
 configure_logging()
 
-CELERY_BROKER_URL = "redis://localhost:6379/0"
-CELERY_RESULT_BACKEND = "redis://localhost:6379/1"
+# ---------------------------------------------------------------------
+# Celery Configuration
+# ---------------------------------------------------------------------
+
+REDIS_HOST = os.getenv('REDIS_HOST', 'redis')
+REDIS_PORT = os.getenv('REDIS_PORT', '6379')
+
+CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
+CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:{REDIS_PORT}/1"
 
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
